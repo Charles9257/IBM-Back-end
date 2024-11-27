@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Lemon</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<p>Date: <span id="selected_date">N/A</span></p>
+
+document.getElementById("reservation_date").addEventListener("change", function() {
+    getBookings();
+});
+
+function getBookings() {
+    fetch(`/bookings/?date=${document.getElementById("reservation_date").value}`)
+        .then(response => response.json())
+        .then(data => {
+            let bookings = "";
+            let reserved_slots = [];
+            
+            data.forEach(item => {
+                console.log(item.fields);
+                reserved_slots.push(item.fields.reservation_slot);
+                bookings += `<p>${item.fields.first_name} - ${formatTime(item.fields.reservation_slot)}</p>`;
+            });
+            
+            document.getElementById("bookings").innerHTML = bookings;
+
+            let slot_options = '<option value="0" disabled>Select time</option>';
+            for (let i = 10; i < 20; i++) {
+                const label = formatTime(i);
+                if (reserved_slots.includes(i)) {
+                    slot_options += `<option value="${i}" disabled>${label}</option>`;
+                } else {
+                    slot_options += `<option value="${i}">${label}</option>`;
+                }
+            }
+            
+            document.getElementById("reservation_slot").innerHTML = slot_options;
+        });
+}
+
+function formatTime(slot) {
+    const hours = Math.floor(slot);
+    const minutes = (slot % 1) * 60;
+    return `${hours}:${minutes === 0 ? "00" : minutes}`;
+}
+
+</body>
+</html>
